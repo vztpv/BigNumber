@@ -1,5 +1,4 @@
-﻿
-// todo - move this file to wiz/bigInt.h
+
 
 #define _CRT_SECURE_NO_WARNINGS
 
