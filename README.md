@@ -1,6 +1,6 @@
 # BigNumber
 
 # ToDo
-    BigInt, BigFraction, BigFloat
-    BigFraction to BigFloat
-    BigFloat to BigFraction
+    1. BigInt, BigFraction, BigFloat
+    2. BigFraction to BigFloat
+    3. BigFloat to BigFraction
