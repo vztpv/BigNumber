@@ -430,10 +430,10 @@ namespace wiz {
 				str = remove_first_zeros(str); /// need for test!!
 				(*this) = BigInt(str);
 			}
-			BigInt(const std::string& str)
+			BigInt(std::string str)
 			{
 				if (false == IsInteger(str)) { return; }
-				/// str is not integer type, then err!?
+				/// str is not integer type, then err!
 
 				bool isMinus = false;
 				int size = 0;
@@ -634,6 +634,20 @@ namespace wiz {
 
 				return temp;
 			}
+			long long Size() const // ABS value
+			{
+				long long temp = 0;
+				
+				if (!this->val.empty()) {
+					temp += wiz::toStr(this->val[0]).size();
+
+					for (int i = 1; i < this->val.size(); ++i) {
+						temp += 9;
+					}
+				}
+
+				return temp;
+			}
 			friend
 				ostream& operator<<(ostream& stream, const BigInt& bigInt)
 			{
@@ -641,6 +655,7 @@ namespace wiz {
 				return stream;
 			}
 		};
+
 	};
 }
 
