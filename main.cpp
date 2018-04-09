@@ -94,8 +94,8 @@ namespace wiz {
 				point_offset = other.point_offset;
 
 				// debug
-				std::cout << "BigFloat " << this->ToString() << std::endl;
-				std::cout << this->point_offset << std::endl;
+				//std::cout << "BigFloat " << this->ToString() << std::endl;
+				//std::cout << this->point_offset << std::endl;
 			}
 			BigFloat(const long long number)
 			{
@@ -131,8 +131,8 @@ namespace wiz {
 				this->value.val = wiz::big_int::BigInt(std::move(str)).val;
 
 				// debug
-				std::cout << "BigFloat " << this->ToString() << std::endl;
-				std::cout << this->point_offset << std::endl;
+				//std::cout << "BigFloat " << this->ToString() << std::endl;
+				//std::cout << this->point_offset << std::endl;
 			}
 
 			BigFloat& operator=(const BigFloat& longInt)
@@ -297,20 +297,26 @@ namespace wiz {
 			}
 
 		public:
+			// todo..
 			bool Cut(long long offset) { // 소수점 아래 자리수
 				// todo - check error for offset.
 
-				// do
-				for (int i = 0; i < this->point_offset - offset; ++i) {
-					this->value.val.pop_back();
+				//
+				std::string str = this->ToString();
+				std::string::size_type dot_pos = str.find('.');
+				const std::string::size_type str_size = str.size();
+
+				if (std::string::npos == dot_pos) { return false; }
+
+				for (int i = 0; i < str_size - dot_pos - 1 - offset; ++i) {
+					str.pop_back();
 				}
-				this->point_offset = offset;
+				this->point_offset = offset; // chk!
+				
+				(*this) = BigFloat(std::move(str));
 
 				return true;
 			}
-
-			// todo - Round 
-
 
 		public:
 			std::string ToString() const
@@ -329,6 +335,7 @@ namespace wiz {
 				if (temp.size() <= this->point_offset) {
 					std::cout << "chk " << temp << std::endl;
 					std::cout << temp.size() << " // " << this->point_offset << std::endl;
+					exit(-2);
 				}
 				else {
 					temp.insert(temp.begin() + temp.size() - this->point_offset, '.');
@@ -356,14 +363,34 @@ int main(void)
 		// 3.140 -> 3140
 		// 0.1       100
 		//   
-	wiz::big_float::BigFloat x("0.5"), y("0.5"); // removal of zeor in 0.33 !!
+	wiz::big_float::BigFloat x("0.001"), y("3.001"); // removal of zeor in 0.33 !!
 
 	std::cout << x << " " << y << "\n";
 
-	wiz::big_float::BigFloat z(x / y);
+	{
+		wiz::big_float::BigFloat z(x + y);
 
-	std::cout << z << "\n";
-	std::cout << "\n";
+		std::cout << z << "\n";
+		std::cout << "\n";
+	}
+	{
+		wiz::big_float::BigFloat z(x - y);
+
+		std::cout << z << "\n";
+		std::cout << "\n";
+	}
+	{
+		wiz::big_float::BigFloat z(x * y);
+
+		std::cout << z << "\n";
+		std::cout << "\n";
+	}
+	{
+		wiz::big_float::BigFloat z(x / y);
+		//z.Cut(0); // 
+		std::cout << z << "\n";
+		std::cout << "\n";
+	}
 
 	// BigInt Test
 	{
