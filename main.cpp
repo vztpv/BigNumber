@@ -20,13 +20,15 @@ namespace wiz {
 			static long long BIGFLOAT_MANT_NUM; // rename? 소수점 아래 자리수?
 
 			// check..
-			static wiz::big_float::BigFloat remove_last_zeros(const wiz::big_float::BigFloat& bi) {
+			static BigFloat remove_last_zeros(const BigFloat& bi) {
 				std::string str = bi.ToString();
+				long long offset = bi.exponent;
 
 				long long i = str.size() - 1;
 				while (str.size() >= 1) {
 					if (str[i] == '0') {
 						str.pop_back();
+						offset--;
 					}
 					else {
 						break;
@@ -34,12 +36,15 @@ namespace wiz {
 					--i;
 				}
 
-				return wiz::big_float::BigFloat(std::move(str));
+				BigFloat result = BigFloat(std::move(str));
+				result.exponent = offset;
+
+				return result;
 			}
 		private:
 			static BigFloat ABS(const BigFloat& bigFloat)
 			{
-				return BigFloat(bigFloat.value.val, bigFloat.value.sign, bigFloat.point_offset);
+				return BigFloat(bigFloat.value.val, bigFloat.value.sign, bigFloat.exponent);
 			}
 			static std::vector<long long> remove_first_zeros(const std::vector<long long>& x) /// remove first all zeros.
 			{
@@ -74,7 +79,7 @@ namespace wiz {
 			}
 		private:
 			wiz::big_int::BigInt value;
-			long long point_offset; /// right->lett?
+			long long exponent; /// right->lett?
 		public:
 			explicit BigFloat()
 			{
@@ -82,8 +87,8 @@ namespace wiz {
 			virtual ~BigFloat() {
 
 			}
-			explicit BigFloat(const std::vector<long long>& val, const bool& sign, const long long point_offset)
-				: value(val, sign), point_offset(point_offset)
+			explicit BigFloat(const std::vector<long long>& val, const bool& sign, const long long exponent)
+				: value(val, sign), exponent(exponent)
 			{
 
 			}
@@ -91,16 +96,16 @@ namespace wiz {
 			BigFloat(const BigFloat& other)
 			{
 				value = other.value;
-				point_offset = other.point_offset;
+				exponent = other.exponent;
 
 				// debug
 				//std::cout << "BigFloat " << this->ToString() << std::endl;
-				//std::cout << this->point_offset << std::endl;
+				//std::cout << this->exponent << std::endl;
 			}
 			BigFloat(const long long number)
 			{
 				this->value = wiz::big_int::BigInt(number);
-				this->point_offset = 0;
+				this->exponent = 0;
 			}
 			BigFloat(std::string str)
 			{
@@ -116,15 +121,22 @@ namespace wiz {
 					str.erase(str.begin());
 				}
 
-				// set point_offset
+				if (str.size() > 0 && str[0] == '.') {
+					str.insert(str.begin(), '0');
+				}
+				else if (str.empty()) {
+					str = "0";
+				}
+				
+				// set exponent
 				std::string::size_type x = str.find('.');
 
 				if (x != std::string::npos) {
-					this->point_offset = str.size() - 1 - x;
+					this->exponent = (str.size() - 1 - x);
 					str.erase(str.begin() + x);
 				}
 				else {
-					this->point_offset = 0;
+					this->exponent = 0;
 				}
 
 				// set value
@@ -132,24 +144,65 @@ namespace wiz {
 
 				// debug
 				//std::cout << "BigFloat " << this->ToString() << std::endl;
-				//std::cout << this->point_offset << std::endl;
+				//std::cout << this->exponent << std::endl;
 			}
 
 			BigFloat& operator=(const BigFloat& longInt)
 			{
 				this->value = longInt.value;
-				this->point_offset = longInt.point_offset;
+				this->exponent = longInt.exponent;
 
 				return *this;
 			}
 			BigFloat& operator=(BigFloat&& other)
 			{
 				this->value = std::move(other.value);
-				this->point_offset = other.point_offset;
+				this->exponent = other.exponent;
 
 				return *this;
 			}
 		public:
+			int CompABS(const BigFloat& x, const BigFloat& y)
+			{
+				//bool a_minus = false, b_minus = false;
+				std::string a = x.ToString(), b = y.ToString();
+				big_int::BigInt x_int, y_int;
+				
+				//if (!a.empty() && a[0] == '-') {
+				//	a.erase(a.begin());
+				//	a_minus = true;
+				//}
+				//if (!b.empty() && b[0] == '-') {
+				//	b.erase(b.begin());
+				//	b_minus = true;
+				//}
+				//if (a_minus && !b_minus) {
+				//	return -1; // <
+				//}
+				//else if (!a_minus && b_minus) {
+				//	return 1; // >
+				//}
+
+				std::string::size_type a_size = a.find('.'), b_size = b.find('.');
+				x_int = big_int::BigInt(a.substr(0, a_size));
+				y_int = big_int::BigInt(b.substr(0, b_size));
+
+				if (x_int > y_int) { return 1; }
+				else if (x_int < y_int) { return -1; }
+				else {
+					int i = a_size + 1, j = b_size + 1;
+					
+					for (; i < a.size() && j < b.size(); ++i, ++j) {
+						if (a[i] > b[i]) {
+							return 1;
+						}
+						else if (a[i] < b[i]) {
+							return -1;
+						}
+					}
+					return 0;
+				}
+			}
 			friend bool operator!=(const BigFloat& num1, const BigFloat& num2)
 			{
 				return !IsSameValues((num1 - num2).value.val, big_int_zero_int);
@@ -176,33 +229,36 @@ namespace wiz {
 			}
 			friend BigFloat operator+(const BigFloat& num1, const BigFloat& num2)
 			{
+				// !=  :  bool xor
 				BigFloat x, y;
 				BigFloat temp;
-				long long length = std::max(num1.point_offset, num2.point_offset);
+				long long length = std::max(num1.exponent, num2.exponent);
 
-				if (num1.point_offset >= length) {
+				if (num1.exponent >= length) {
 					x = num1.ToString();
 					y = num2.ToString();
 
 					std::string str = num2.value.ToString();
-					for (long long i = 0; i < length - num2.point_offset; ++i) {
+					for (long long i = 0; i < length - num2.exponent; ++i) {
 						str.push_back('0');
 					}
+					
 					y = BigFloat(std::move(str));
 				}
-				else if (num2.point_offset >= length) {
+				else if (num2.exponent >= length) {
 					x = num1.ToString();
 					y = num2.ToString();
 
 					std::string str = num1.value.ToString();
-					for (long long i = 0; i < length - num1.point_offset; ++i) {
+					for (long long i = 0; i < length - num1.exponent; ++i) {
 						str.push_back('0');
 					}
+					
 					x = BigFloat(std::move(str));
 				}
 
 				temp.value = x.value + y.value;
-				temp.point_offset = length;
+				temp.exponent = length;
 
 				return temp;
 			}
@@ -210,41 +266,46 @@ namespace wiz {
 			{
 				BigFloat x, y;
 				BigFloat temp;
-				long long length = std::max(num1.point_offset, num2.point_offset);
+				long long length = std::max(num1.exponent, num2.exponent);
 
-				if (num1.point_offset >= length) {
+				if (num1.exponent >= length) {
 					x = num1.ToString();
 					y = num2.ToString();
 
 					std::string str = num2.value.ToString();
-					for (long long i = 0; i < length - num2.point_offset; ++i) {
+					for (long long i = 0; i < length - num2.exponent; ++i) {
 						str.push_back('0');
 					}
+				
 					y = BigFloat(std::move(str));
+
+					
 				}
-				else if (num2.point_offset >= length) {
+				else if (num2.exponent >= length) {
 					x = num1.ToString();
 					y = num2.ToString();
 
 					std::string str = num1.value.ToString();
-					for (long long i = 0; i < length - num1.point_offset; ++i) {
+					for (long long i = 0; i < length - num1.exponent; ++i) {
 						str.push_back('0');
 					}
+					
 					x = BigFloat(std::move(str));
 				}
 
-				temp.value = x.value - y.value;
-				temp.point_offset = length;
+				temp.value = x.value - y.value; 
+				temp.exponent = length;
 
 				return temp;
 			}
 			friend BigFloat operator*(const BigFloat& num1, const BigFloat& num2)
 			{
+				// num1 == zero or num2 == zero -> then return 0. ?
 				BigFloat temp;
-				long long length = num1.point_offset + num2.point_offset;
+				long long length = num1.exponent + num2.exponent;
 
 				temp.value = num1.value * num2.value;
-				temp.point_offset = length;
+				temp.exponent = length;
 
 				return temp;
 			}
@@ -254,7 +315,11 @@ namespace wiz {
 			friend BigFloat operator/(BigFloat num1, BigFloat num2)
 			{
 				// todo - num2가 0인 경우 에러체크!
-				
+				if (num2 == BigFloat(0)) {
+					std::cout << "divide by zero Error" << std::endl;
+					throw "divide by zero Error";
+				}
+
 				BigFloat a = num1;
 				num1 = BigFloat(1);
 
@@ -264,8 +329,8 @@ namespace wiz {
 
 				long long size1, size2;
 
-				size1 = num1.point_offset;
-				size2 = num2.point_offset;
+				size1 = num1.exponent;
+				size2 = num2.exponent;
 				
 				{
 					const long long x = std::max(size1, size2);
@@ -278,8 +343,8 @@ namespace wiz {
 					}
 				}
 
-				num1.point_offset = 0;
-				num2.point_offset = 0;
+				num1.exponent = 0;
+				num2.exponent = 0;
 
 				{
 					for (long long i = 0; i < BIGFLOAT_MANT_NUM; ++i) {
@@ -290,29 +355,40 @@ namespace wiz {
 					auto q = x.value / num2.value;
 
 					result.value = q;
-					result.point_offset = BIGFLOAT_MANT_NUM;
+					result.exponent = BIGFLOAT_MANT_NUM;
 				}
 
 				return a * result;
 			}
 
 		public:
+			bool Cut()
+			{
+				BigFloat temp(*this);
+
+				temp = remove_last_zeros(temp);
+				
+				*this = std::move(temp);
+				return true;
+			}
 			// todo..
 			bool Cut(long long offset) { // 소수점 아래 자리수
 				// todo - check error for offset.
-
+				if (this->exponent < offset) {
+					return false;
+				}
 				//
 				std::string str = this->ToString();
 				std::string::size_type dot_pos = str.find('.');
 				const std::string::size_type str_size = str.size();
 
 				if (std::string::npos == dot_pos) { return false; }
-
+				
 				for (int i = 0; i < str_size - dot_pos - 1 - offset; ++i) {
 					str.pop_back();
 				}
-				this->point_offset = offset; // chk!
-				
+				this->exponent = offset; // chk!
+
 				(*this) = BigFloat(std::move(str));
 
 				return true;
@@ -323,22 +399,23 @@ namespace wiz {
 			{
 				std::string temp;
 
-				if (this->value.sign == false) {
-					temp = "-";
+				if (0 < this->value.val.size()) {
+					temp += wiz::toStr(this->value.val[0]);
 				}
-				for (int i = 0; i < this->value.val.size(); ++i) {
+				for (int i = 1; i < this->value.val.size(); ++i) {
 					temp = temp + wiz::toStr2(this->value.val[i], 9);
 				}
 
-				// todo - insert "point"!
-					// error..
-				if (temp.size() <= this->point_offset) {
-					std::cout << "chk " << temp << std::endl;
-					std::cout << temp.size() << " // " << this->point_offset << std::endl;
-					exit(-2);
+				// insert point to temp.
+				while (temp.size() <= this->exponent)
+				{
+					temp.insert(temp.begin(), '0');
 				}
-				else {
-					temp.insert(temp.begin() + temp.size() - this->point_offset, '.');
+
+				temp.insert(temp.begin() + temp.size() - this->exponent, '.');
+				
+				if (this->value.sign == false) {
+					temp.insert(temp.begin(), '-');
 				}
 
 				return temp;
@@ -354,7 +431,7 @@ namespace wiz {
 	};
 }
 
-long long wiz::big_float::BigFloat::BIGFLOAT_MANT_NUM = 10;
+long long wiz::big_float::BigFloat::BIGFLOAT_MANT_NUM = 20;
 
 
 int main(void)
@@ -363,30 +440,31 @@ int main(void)
 		// 3.140 -> 3140
 		// 0.1       100
 		//   
-	wiz::big_float::BigFloat x("0.001"), y("3.001"); // removal of zeor in 0.33 !!
+	wiz::big_float::BigFloat x("123.4567890"), y("0.987654321"); // removal of zeor in 0.33 !!
 
 	std::cout << x << " " << y << "\n";
 
 	{
 		wiz::big_float::BigFloat z(x + y);
-
+		z.Cut();
 		std::cout << z << "\n";
 		std::cout << "\n";
 	}
 	{
 		wiz::big_float::BigFloat z(x - y);
-
+		z.Cut();
 		std::cout << z << "\n";
 		std::cout << "\n";
 	}
 	{
 		wiz::big_float::BigFloat z(x * y);
-
+		z.Cut();
 		std::cout << z << "\n";
 		std::cout << "\n";
 	}
 	{
-		wiz::big_float::BigFloat z(x / y);
+		wiz::big_float::BigFloat z(x / y);	
+		z.Cut();
 		//z.Cut(0); // 
 		std::cout << z << "\n";
 		std::cout << "\n";

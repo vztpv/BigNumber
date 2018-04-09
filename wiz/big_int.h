@@ -439,13 +439,23 @@ namespace wiz {
 				int size = 0;
 				char* arr = NULL;
 				if (str[0] == '-') {
+					str.erase(str.begin());
+					str = remove_first_zeros(str);
+
+					if (str.empty()) {
+						str = "0";
+					}
 					sign = false;
 					isMinus = true;
-					arr = new char[str.size()];
-					size = str.size() - 1;
-					strcpy(arr, str.c_str() + 1);
+					arr = new char[str.size() + 1];
+					size = str.size();
+					strcpy(arr, str.c_str());
 				}
 				else {
+					str = remove_first_zeros(str);
+					if (str.empty()) {
+						str = "0";
+					}
 					sign = true;
 					arr = new char[str.size() + 1];
 					strcpy(arr, str.c_str());
@@ -522,7 +532,7 @@ namespace wiz {
 					if (IsSameValues(big_int_zero_int, number.val)) { number.sign = true; }// think only +0.
 				}
 				else if (num1.sign && !num2.sign) {
-					if (num1.val < num2.val)
+					if (COMP_LT(num1.val, num2.val))
 					{
 						number.val = _int_minus(num2.val, num1.val);
 						number.sign = false; // minus
@@ -539,7 +549,7 @@ namespace wiz {
 					}
 				}
 				else if (!num1.sign && num2.sign) {
-					if (num1.val < num2.val)
+					if (COMP_LT(num1.val, num2.val))
 					{
 						number.val = _int_minus(num2.val, num1.val);
 						number.sign = true; // minus
