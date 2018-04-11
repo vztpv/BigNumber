@@ -6,4 +6,4 @@
     2. BigFloat to BigFraction
 
 # Speed
-    + == - >> * >>>>>>> / == %  (  / and % operation are very slow )
+    + == - >> * >>>>>>> / == %  (  / and % operation are very very slow )
