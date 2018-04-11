@@ -1,5 +1,9 @@
 # BigNumber
-
+    BigInt, BigFraction, BigFloat
+    
 # ToDo
-1. BigFloat - DONE? - Has Bug.. Cancel BigFloat? Use BigInt ??
-2. BigFloat to BigFraction
+    1. BigFloat - DONE?? : need more tests.
+    2. BigFloat to BigFraction
+
+# Speed
+   + == - >> * >>>>>>> /
