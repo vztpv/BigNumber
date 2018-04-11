@@ -437,15 +437,16 @@ namespace wiz {
 
 				bool isMinus = false;
 				int size = 0;
-				char* arr = NULL;
+				char* arr = nullptr;
 				if (str[0] == '-') {
 					str.erase(str.begin());
 					str = remove_first_zeros(str);
 
+					sign = false;
 					if (str.empty()) {
 						str = "0";
+						sign = true;
 					}
-					sign = false;
 					isMinus = true;
 					arr = new char[str.size() + 1];
 					size = str.size();

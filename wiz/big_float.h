@@ -137,7 +137,9 @@ namespace wiz {
 
 				// set value
 				this->value.val = wiz::big_int::BigInt(std::move(str)).val;
-
+				if (IsSameValues(this->value.val, std::vector<long long>{0})) {
+					this->value.sign = true;
+				}
 				// debug
 				//std::cout << "BigFloat " << this->ToString() << std::endl;
 				//std::cout << this->exponent << std::endl;
