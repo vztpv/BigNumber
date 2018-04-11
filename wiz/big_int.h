@@ -588,6 +588,10 @@ namespace wiz {
 				temp.val = _int_multiple(num1.val, num2.val);
 				temp.sign = (num1.sign == num2.sign);
 
+				if (IsSameValues(temp.val, std::vector<long long>{0})) {
+					temp.sign = true;
+				}
+
 				return temp;
 			}
 			friend BigInt operator/(const BigInt& num1, const BigInt& num2)
@@ -604,7 +608,9 @@ namespace wiz {
 
 				temp.val = quotient;
 				temp.sign = (num1.sign == num2.sign); /// chk...
-
+				if (IsSameValues(temp.val, std::vector<long long>{0})) {
+					temp.sign = true;
+				}
 				return temp;
 			}
 			friend BigInt operator%(const BigInt& num1, const BigInt& num2)
