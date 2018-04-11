@@ -3,7 +3,6 @@
 #define BIG_FLOAT_H
 
 #include <wiz/big_int.h>
-//#include <wiz/big_fraction.h>
 
 namespace wiz {
 	class big_float {
@@ -34,6 +33,25 @@ namespace wiz {
 
 				BigFloat result = BigFloat(std::move(str));
 				result.exponent = offset;
+
+				return result;
+			}
+			static BigFloat remove_first_zeros(const BigFloat& bi) { // .을 만나면 중지.
+				std::string str = bi.ToString();
+
+				long long i = 0;
+				while (i < str.size()) {
+					if (str[i] == '0') {
+						str.erase(str.begin());
+					}
+					else {
+						break;
+					}
+					++i;
+				}
+
+				BigFloat result = BigFloat(std::move(str));
+				result.exponent = bi.exponent;
 
 				return result;
 			}
@@ -318,9 +336,6 @@ namespace wiz {
 					throw "divide by zero Error";
 				}
 
-				BigFloat a = num1;
-				num1 = BigFloat(1);
-
 				BigFloat result;
 				const BigFloat ten(10);
 				BigFloat tens(1);
@@ -351,12 +366,14 @@ namespace wiz {
 
 					auto x = num1 * tens;
 					auto q = x.value / num2.value;
-
+						// x	= a1 * 10 ^ n + ...
+						// num2	= b1 * 10 ^ m + ...
+						// x / num2 = c1 * 10 ^ (n - m) + ...
 					result.value = q;
 					result.exponent = BIGFLOAT_MANT_NUM;
 				}
 
-				return a * result;
+				return result;
 			}
 
 		public:
@@ -391,6 +408,8 @@ namespace wiz {
 
 				return true;
 			}
+			
+			// todo - Round!
 
 		public:
 			std::string ToString() const

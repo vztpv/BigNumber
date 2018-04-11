@@ -22,7 +22,7 @@ namespace wiz {
 		static const long long BIGINT_BASE = (long long)1000000000; /// chk!!  changable?
 		static const long long BIGINT_DIGIT_NUM = 9;
 													  // const std::vector<long long> one_int( 1, '1' );
-		static std::vector<long long> remove_first_zeros(const std::vector<long long>& x) /// remove first all zeros.
+		static std::vector<long long> remove_first_zeros(std::vector<long long> x) /// remove first all zeros.
 		{
 			int zero_num = 0;
 
@@ -31,7 +31,7 @@ namespace wiz {
 				if (x[i] != 0) { break; }
 				zero_num++;
 			}
-			if (0 == zero_num) { return x; }
+			if (0 == zero_num) { return std::move(x); }
 			if (x.size() == zero_num) { return big_int_ndef_int; } /// chk...
 			std::vector<long long> temp(x.size() - zero_num);
 			for (int i = 0; i < temp.size(); i++)
@@ -39,7 +39,7 @@ namespace wiz {
 				temp[i] = x[i + zero_num];
 			}
 
-			return temp;
+			return std::move(temp);
 		}
 
 		static bool IsSameValues(const std::vector<long long>& arr1, const std::vector<long long>& arr2)
@@ -134,7 +134,7 @@ namespace wiz {
 			}
 			temp[0] = (itemp);
 
-			std::vector<long long> ret = remove_first_zeros(temp);
+			std::vector<long long> ret = remove_first_zeros(std::move(temp));
 			if (ret.empty()) { return big_int_zero_int; }
 			return ret;
 		}
@@ -184,7 +184,7 @@ namespace wiz {
 				u--;
 			}
 
-			std::vector<long long> ret = remove_first_zeros(temp);
+			std::vector<long long> ret = remove_first_zeros(std::move(temp));
 			if (ret.empty()) { return big_int_zero_int; }
 			return ret;
 		}
@@ -204,7 +204,7 @@ namespace wiz {
 				itemp = sum / BIGINT_BASE;
 			}
 			temp[0] = (itemp);
-			std::vector<long long> ret = remove_first_zeros(temp);
+			std::vector<long long> ret = remove_first_zeros(std::move(temp));
 			if (ret.empty()) { return big_int_zero_int; }
 			return ret;
 		}
@@ -230,7 +230,7 @@ namespace wiz {
 				w++;
 			}
 
-			std::vector<long long> ret = remove_first_zeros(sum);
+			std::vector<long long> ret = remove_first_zeros(std::move(sum));
 			if (ret.empty()) {
 				return big_int_zero_int;
 			}
@@ -318,7 +318,6 @@ namespace wiz {
 					while (left <= right) {
 						middle = (left + right) >> 1; /// / 2
 
-						val.clear();
 						const std::vector<long long> llvec = _int_multiple(_y, middle);
 						if (COMP_LT(llvec, temp_concat) || IsSameValues(llvec, temp_concat)) {
 							val = _int_minus(temp_concat, llvec);
@@ -331,7 +330,7 @@ namespace wiz {
 						if (COMP_LT(val, _y) && (IsSameValues(big_int_zero_int, val) || COMP_LT(big_int_zero_int, val))) {
 							vec_quo.push_back(middle);//
 							itemp.clear();
-							itemp = remove_first_zeros(val);
+							itemp = remove_first_zeros(std::move(val));
 							break;
 						}
 						else if (COMP_LT(_y, val) || IsSameValues(val, _y)) {
@@ -348,7 +347,7 @@ namespace wiz {
 			}
 
 			// return
-			quotient.clear(); quotient = remove_first_zeros(vec_quo);
+			quotient.clear(); quotient = remove_first_zeros(std::move(vec_quo));
 			if (quotient.empty()) { quotient = big_int_zero_int; }
 			remainder.clear();
 			if (itemp.empty()) { remainder = big_int_zero_int; }
@@ -363,6 +362,7 @@ namespace wiz {
 			std::string remove_first_zeros(const std::string& str)
 			{
 				std::string temp;
+				temp.reserve(str.size());
 				int state = 0;
 
 				for (int i = 0; i < str.size(); ++i) {
@@ -437,7 +437,7 @@ namespace wiz {
 
 				bool isMinus = false;
 				int size = 0;
-				char* arr = nullptr;
+				//char* arr = nullptr;
 				if (str[0] == '-') {
 					str.erase(str.begin());
 					str = remove_first_zeros(str);
@@ -448,9 +448,9 @@ namespace wiz {
 						sign = true;
 					}
 					isMinus = true;
-					arr = new char[str.size() + 1];
+				//	arr = new char[str.size() + 1];
 					size = str.size();
-					strcpy(arr, str.c_str());
+				//	strcpy(arr, str.c_str());
 				}
 				else {
 					str = remove_first_zeros(str);
@@ -458,24 +458,46 @@ namespace wiz {
 						str = "0";
 					}
 					sign = true;
-					arr = new char[str.size() + 1];
-					strcpy(arr, str.c_str());
+				//	arr = new char[str.size() + 1];
+				//	strcpy(arr, str.c_str());
 					size = str.size();
 				}
 
 				while (true)
 				{
-					/// todo - fix!!
-					size = std::max(size - 9, 0);
-					val.push_back(atoll(arr + size));
+					// chk?
+					const auto idx = (std::max(size - wiz::big_int::BIGINT_DIGIT_NUM, 0LL) + 
+						(size/wiz::big_int::BIGINT_DIGIT_NUM > 0? wiz::big_int::BIGINT_DIGIT_NUM : size));
+					char temp;
+
+					size = std::max(size - wiz::big_int::BIGINT_DIGIT_NUM, 0LL);
+					
+					if (idx == str.size() - 1) {
+						// nothing
+					}
+					else {
+						temp = str[idx];
+						str[idx] = '\0';
+					}
+
+					//val.push_back(atoll(arr + size));
+					val.push_back(atoll(str.c_str() + size));
+
+					if (idx == str.size() - 1) {
+						// nothing
+					}
+					else {
+						str[idx] = temp;
+					}
+
 
 					if (size == 0) {
 						break;
 					}
-					arr[size] = '\0';
+					//arr[size] = '\0';
 				}
 
-				delete[] arr;
+				//delete[] arr;
 				std::reverse(val.begin(), val.end());
 			}
 
@@ -645,8 +667,11 @@ namespace wiz {
 				if (this->sign == false) {
 					temp = "-";
 				}
-				for (int i = 0; i < this->val.size(); ++i) {
-					temp = temp + wiz::toStr2(this->val[i], 9);
+				if (this->val.size() > 0) {
+					temp += wiz::toStr(this->val[0]);
+				}
+				for (int i = 1; i < this->val.size(); ++i) {
+					temp += wiz::toStr2(this->val[i], 9);
 				}
 
 				return temp;
