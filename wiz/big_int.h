@@ -22,7 +22,7 @@ namespace wiz {
 		static const long long BIGINT_BASE = (long long)1000000000; /// chk!!  changable?
 		static const long long BIGINT_DIGIT_NUM = 9;
 													  // const std::vector<long long> one_int( 1, '1' );
-		static std::vector<long long> remove_first_zeros(std::vector<long long> x) /// remove first all zeros.
+		static std::vector<long long> remove_first_zeros(const std::vector<long long>& x) /// remove first all zeros.
 		{
 			int zero_num = 0;
 

@@ -36,25 +36,7 @@ namespace wiz {
 
 				return result;
 			}
-			static BigFloat remove_first_zeros(const BigFloat& bi) { // .을 만나면 중지.
-				std::string str = bi.ToString();
-
-				long long i = 0;
-				while (i < str.size()) {
-					if (str[i] == '0') {
-						str.erase(str.begin());
-					}
-					else {
-						break;
-					}
-					++i;
-				}
-
-				BigFloat result = BigFloat(std::move(str));
-				result.exponent = bi.exponent;
-
-				return result;
-			}
+			
 		private:
 			static BigFloat ABS(const BigFloat& bigFloat)
 			{
@@ -330,8 +312,9 @@ namespace wiz {
 			// using BIGFLOAT_MANT_NUM
 			friend BigFloat operator/(BigFloat num1, BigFloat num2)
 			{
+				BigFloat zero(0);
 				// todo - num2가 0인 경우 에러체크!
-				if (num2 == BigFloat(0)) {
+				if (num2 == zero) {
 					std::cout << "divide by zero Error" << std::endl;
 					throw "divide by zero Error";
 				}

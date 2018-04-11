@@ -10,7 +10,7 @@
 
 #include <ctime>
 
-#define BIGNUMBER wiz::big_float::BigFloat // wiz::big_int::BigInt
+#define BIGNUMBER wiz::big_int::BigInt // wiz::big_float::BigFloat // wiz::big_int::BigInt
 
 
 int main(void)
@@ -79,7 +79,7 @@ int main(void)
 			BIGNUMBER total("1");
 			BIGNUMBER x("1");
 
-			for (int i = 1; i <= 300; ++i) {
+			for (int i = 1; i <= 1000; ++i) {
 				total = total * x;
 				x = x + BIGNUMBER("1");
 			}
@@ -93,9 +93,9 @@ int main(void)
 			BIGNUMBER total(bigInt);
 			BIGNUMBER x("1");
 
-			for (int i = 1; i <= 300; ++i) {
+			for (int i = 1; i <= 1000; ++i) {
 				total = total / x;
-				total.Cut();
+			//	total.Cut();
 				x = x + BIGNUMBER("1");
 			}
 			//total.Cut();
