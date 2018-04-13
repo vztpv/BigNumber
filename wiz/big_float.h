@@ -77,7 +77,7 @@ namespace wiz {
 			wiz::big_int::BigInt value;
 			long long exponent; /// right->lett?
 		public:
-			explicit BigFloat()
+			explicit BigFloat() 
 			{
 			}
 			virtual ~BigFloat() {
@@ -308,7 +308,10 @@ namespace wiz {
 				return temp;
 			}
 
-
+		private:
+			static wiz::big_int::BigInt tens;
+			static const wiz::big_int::BigInt ten;
+		public:
 			// using BIGFLOAT_MANT_NUM
 			friend BigFloat operator/(BigFloat num1, BigFloat num2)
 			{
@@ -320,9 +323,7 @@ namespace wiz {
 				}
 
 				BigFloat result;
-				const BigFloat ten(10);
-				BigFloat tens(1);
-
+				static long long beforeMantNum = BIGFLOAT_MANT_NUM;
 				long long size1, size2;
 
 				size1 = num1.exponent;
@@ -343,12 +344,16 @@ namespace wiz {
 				num2.exponent = 0;
 
 				{
-					for (long long i = 0; i < BIGFLOAT_MANT_NUM; ++i) {
-						tens = tens * ten;
+					if (beforeMantNum != BIGFLOAT_MANT_NUM || IsSameValues(tens.val, std::vector<long long>{1})) {
+						for (long long i = 0; i < BIGFLOAT_MANT_NUM; ++i) {
+							tens = tens * ten;
+						}
 					}
+					beforeMantNum = BIGFLOAT_MANT_NUM;
 
-					auto x = num1 * tens;
-					auto q = x.value / num2.value;
+
+					auto x = num1.value * tens;
+					auto q = x / num2.value;
 						// x	= a1 * 10 ^ n + ...
 						// num2	= b1 * 10 ^ m + ...
 						// x / num2 = c1 * 10 ^ (n - m) + ...
@@ -432,6 +437,7 @@ namespace wiz {
 }
 
 long long wiz::big_float::BigFloat::BIGFLOAT_MANT_NUM = 100;
-
+wiz::big_int::BigInt wiz::big_float::BigFloat::tens = 1;
+const wiz::big_int::BigInt wiz::big_float::BigFloat::ten = 10;
 
 #endif

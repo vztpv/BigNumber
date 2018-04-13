@@ -10,18 +10,18 @@
 
 #include <ctime>
 
-#define BIGNUMBER wiz::big_int::BigInt // wiz::big_float::BigFloat // wiz::big_int::BigInt
+#define BIGNUMBER wiz::big_float::BigFloat // wiz::big_int::BigInt
 
 
 int main(void)
 {
 	wiz::big_float::BigFloat::BIGFLOAT_MANT_NUM = 100;
-	/*
+	
 	// BigFloat Test
 		// 3.140 -> 3140
 		// 0.1       100
 		//   
-	wiz::big_float::BigFloat x("003.1400"), y("00.010"); // removal of zeor in 0.33 !!
+	wiz::big_float::BigFloat x("00.1400"), y("3333.010"); // removal of zeor in 0.33 !!
 
 	std::cout << x << " " << y << "\n";
 
@@ -70,9 +70,9 @@ int main(void)
 
 		std::cout << y << std::endl;
 	}
-	*/
+	
 	{ // 300!
-		BIGNUMBER bigInt;
+		BIGNUMBER bigNumber;
 		int a = clock();
 		for (int i = 0; i < 1; ++i)
 		{
@@ -85,17 +85,17 @@ int main(void)
 			}
 			//std::cout << total << std::endl;
 
-			bigInt = std::move(total);
+			bigNumber = std::move(total);
 		}
 		int b = clock();
 		int c = clock();
 		for (int i = 0; i < 1; ++i) {
-			BIGNUMBER total(bigInt);
+			BIGNUMBER total(bigNumber);
 			BIGNUMBER x("1");
 
 			for (int i = 1; i <= 1000; ++i) {
 				total = total / x;
-			//	total.Cut();
+				total.Cut();
 				x = x + BIGNUMBER("1");
 			}
 			//total.Cut();

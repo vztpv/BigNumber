@@ -9,6 +9,9 @@
 #include <iostream>
 #include <cstring>
 
+//
+#include <unordered_map>
+
 #include <wiz/global.h>
 
 
@@ -208,6 +211,29 @@ namespace wiz {
 			if (ret.empty()) { return big_int_zero_int; }
 			return ret;
 		}
+		static std::vector<long long> _int_multiple_with_log(const std::vector<long long>& x, const long long ch, std::unordered_map<long, vector<long long>>& log)
+		{
+			if (x.empty()) { return big_int_ndef_int; }
+			std::vector<long long> _x = remove_first_zeros(x);
+			if (_x.empty()) { _x = big_int_zero_int; }
+
+			std::vector<long long> temp(_x.size() + 1, 0);
+			long long itemp = 0;
+
+			// chk following...
+
+
+			for (int i = temp.size() - 1; i >= 1; i--)
+			{
+				long long sum = (ch) * (_x[i - 1]) + itemp;
+				temp[i] = (sum % BIGINT_BASE);
+				itemp = sum / BIGINT_BASE;
+			}
+			temp[0] = (itemp);
+			std::vector<long long> ret = remove_first_zeros(std::move(temp));
+			if (ret.empty()) { return big_int_zero_int; }
+			return ret;
+		}
 		static std::vector<long long> _int_multiple(const std::vector<long long>& x, const std::vector<long long>& y)
 		{
 			if (x.empty() || y.empty()) { return big_int_ndef_int; }
@@ -297,7 +323,7 @@ namespace wiz {
 				const std::vector<long long> temp_concat = _int_concat(itemp, _int_sub(_x, m, k));
 				if (COMP_LT(temp_concat, _y))
 				{
-					vec_quo.push_back((0));
+					vec_quo.push_back(0);
 					k++;
 					if (IsSameValues(big_int_zero_int, temp_concat))
 					{
